@@ -64,8 +64,6 @@ echo "Adding temporary address ${TEMP_CIDR} on ${IFACE}"
 ip addr del "${TEMP_CIDR}" dev "${IFACE}" 2>/dev/null || true
 ip addr add "${TEMP_CIDR}" dev "${IFACE}"
 
-echo "Connecting to GPON at ${GPON_IP} (default password: SUGAR2A041)"
-
 if [ -n "${GPON_PASS_B64}" ]; then
     GPON_PASS="$(printf "%s" "${GPON_PASS_B64}" | base64 -d)"
 
@@ -75,6 +73,8 @@ if [ -n "${GPON_PASS_B64}" ]; then
         "${GPON_USER}@${GPON_IP}"
     exit 0
 fi
+
+echo "Connecting to GPON at ${GPON_IP} (default password: SUGAR2A041)"
 
 ssh -tt \
     -oKexAlgorithms=+diffie-hellman-group1-sha1 \
