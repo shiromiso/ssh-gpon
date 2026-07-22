@@ -10,14 +10,16 @@ PASS_FILE="${SSH_GPON_PASS_FILE:-${HOME}/.ssh-gpon}"
 if [[ $# -ne 1 ]]; then
 cat <<'EOF'
 ============================================================
- Nokia G-010S-A GPON ssh
+ Nokia G-010S-A GPON status
 ============================================================
 
 This script will:
   SSH to UniFi
   Set up a temp IP address on GPON interface
   SSH to GPON
+  Read link status
   Remove temp IP when done
+============================================================
 EOF
 
 echo
@@ -27,6 +29,9 @@ exit 1
 fi
 
 UDR_HOST="$1"
+
+# Command to run on the GPON.
+REMOTE_CMD="/opt/lantiq/bin/onu ploamsg"
 
 # If the dotfile exists, take the GPON password from it
 # Otherwise, the user is prompted interactively
@@ -50,6 +55,7 @@ TEMP_CIDR="192.168.1.2/24"
 GPON_IP="192.168.1.10"
 GPON_USER="ONTUSER"
 GPON_PASS_B64='"'${GPON_PASS_B64}'"'
+REMOTE_CMD='"'${REMOTE_CMD}'"'
 
 cleanup() {
     echo
@@ -69,15 +75,15 @@ echo "Connecting to GPON at ${GPON_IP} (default password: SUGAR2A041)"
 if [ -n "${GPON_PASS_B64}" ]; then
     GPON_PASS="$(printf "%s" "${GPON_PASS_B64}" | base64 -d)"
 
-    sshpass -p "${GPON_PASS}" ssh -tt \
+    sshpass -p "${GPON_PASS}" ssh \
         -oKexAlgorithms=+diffie-hellman-group1-sha1 \
         -oHostKeyAlgorithms=+ssh-rsa \
-        "${GPON_USER}@${GPON_IP}"
+        "${GPON_USER}@${GPON_IP}" "${REMOTE_CMD}"
     exit 0
 fi
 
-ssh -tt \
+ssh \
     -oKexAlgorithms=+diffie-hellman-group1-sha1 \
     -oHostKeyAlgorithms=+ssh-rsa \
-    "${GPON_USER}@${GPON_IP}"
+    "${GPON_USER}@${GPON_IP}" "${REMOTE_CMD}"
 '
