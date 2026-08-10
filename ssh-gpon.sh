@@ -64,10 +64,13 @@ echo "Adding temporary address ${TEMP_CIDR} on ${IFACE}"
 ip addr del "${TEMP_CIDR}" dev "${IFACE}" 2>/dev/null || true
 ip addr add "${TEMP_CIDR}" dev "${IFACE}"
 
+# GPON firmware regenerates its SSH host key on every reboot.
 if [ -n "${GPON_PASS_B64}" ]; then
     GPON_PASS="$(printf "%s" "${GPON_PASS_B64}" | base64 -d)"
 
     sshpass -p "${GPON_PASS}" ssh -tt \
+        -oStrictHostKeyChecking=no \
+        -oUserKnownHostsFile=/dev/null \
         -oKexAlgorithms=+diffie-hellman-group1-sha1 \
         -oHostKeyAlgorithms=+ssh-rsa \
         "${GPON_USER}@${GPON_IP}"
@@ -77,6 +80,8 @@ fi
 echo "Connecting to GPON at ${GPON_IP} (default password: SUGAR2A041)"
 
 ssh -tt \
+    -oStrictHostKeyChecking=no \
+    -oUserKnownHostsFile=/dev/null \
     -oKexAlgorithms=+diffie-hellman-group1-sha1 \
     -oHostKeyAlgorithms=+ssh-rsa \
     "${GPON_USER}@${GPON_IP}"

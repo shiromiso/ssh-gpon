@@ -96,10 +96,13 @@ ip addr add "${TEMP_CIDR}" dev "${IFACE}"
 
 REMOTE_CMD="$(printf "%s" "${REMOTE_CMD_B64}" | base64 -d)"
 
+# GPON firmware regenerates its SSH host key on every reboot.
 if [ -n "${GPON_PASS_B64}" ]; then
     GPON_PASS="$(printf "%s" "${GPON_PASS_B64}" | base64 -d)"
 
     sshpass -p "${GPON_PASS}" ssh \
+        -oStrictHostKeyChecking=no \
+        -oUserKnownHostsFile=/dev/null \
         -oKexAlgorithms=+diffie-hellman-group1-sha1 \
         -oHostKeyAlgorithms=+ssh-rsa \
         "${GPON_USER}@${GPON_IP}" "${REMOTE_CMD}"
@@ -109,6 +112,8 @@ fi
 echo "Connecting to GPON at ${GPON_IP} (default password: SUGAR2A041)"
 
 ssh \
+    -oStrictHostKeyChecking=no \
+    -oUserKnownHostsFile=/dev/null \
     -oKexAlgorithms=+diffie-hellman-group1-sha1 \
     -oHostKeyAlgorithms=+ssh-rsa \
     "${GPON_USER}@${GPON_IP}" "${REMOTE_CMD}"
